@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#11110F">
+<title>Plan</title>
+<style>
+  :root{
+    --ink:#16160F; --paper:#FBFAF5; --surface:#FFFFFF; --line:#E6E3D8;
+    --muted:#7A776C; --faint:#A8A498;
+    --teal:#0F6E56; --teal-bg:#E1F2EC; --teal-line:#9FD9C5;
+    --amber:#9A6310; --amber-bg:#F8EBD4; --amber-line:#E8C988;
+    --slate:#3E4A57; --slate-bg:#EBEEF1;
+    --plum:#4A3C82; --plum-bg:#ECE9F8;
+    --blue:#1A5C9E; --blue-bg:#E4EFF9;
+    --now:#16160F;
+    --r:14px;
+    --safe-b:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ink:#F2F0E8; --paper:#11110F; --surface:#1B1B18; --line:#2E2E29;
+      --muted:#9A968A; --faint:#6E6B60;
+      --teal:#5DCAA5; --teal-bg:#10342B; --teal-line:#1E5C49;
+      --amber:#E7B45A; --amber-bg:#3A2A10; --amber-line:#6B4A14;
+      --slate:#A9B6C2; --slate-bg:#23292F;
+      --plum:#A99CE0; --plum-bg:#23204A;
+      --blue:#7FB2E6; --blue-bg:#142C44;
+      --now:#F2F0E8;
+    }
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--paper);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body{max-width:560px;margin:0 auto;padding:0 16px calc(96px + var(--safe-b));min-height:100vh}
+  .top{padding:22px 2px 14px;position:sticky;top:0;background:var(--paper);z-index:20}
+  .top .date{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);font-weight:600}
+  .top h1{font-size:26px;font-weight:680;letter-spacing:-.02em;margin-top:3px;line-height:1.05}
+  .top .sub{font-size:13px;color:var(--muted);margin-top:4px}
+
+  /* NOW card — the signature */
+  .nowcard{background:var(--ink);color:var(--paper);border-radius:18px;padding:18px 18px 16px;margin:6px 0 18px;position:relative;overflow:hidden}
+  @media (prefers-color-scheme: dark){ .nowcard{background:var(--surface);color:var(--ink);border:1px solid var(--line)} }
+  .nowcard .eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;opacity:.6}
+  .nowcard .pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--teal);margin-right:7px;vertical-align:1px;animation:p 2s infinite}
+  @keyframes p{0%,100%{opacity:1}50%{opacity:.25}}
+  .nowcard h2{font-size:23px;font-weight:680;letter-spacing:-.01em;margin-top:8px;line-height:1.12}
+  .nowcard .meta{font-size:13px;opacity:.7;margin-top:6px}
+  .nowcard .next{margin-top:14px;padding-top:13px;border-top:1px solid rgba(255,255,255,.14);font-size:13px;opacity:.85;display:flex;gap:7px;align-items:baseline}
+  @media (prefers-color-scheme: dark){ .nowcard .next{border-top-color:var(--line)} }
+  .nowcard .next b{font-weight:600}
+  .nowcard .next .t{color:var(--teal);font-weight:700;font-variant-numeric:tabular-nums}
+
+  /* day strip */
+  .strip{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:16px}
+  .d{text-align:center;padding:9px 0 8px;border-radius:11px;border:1px solid var(--line);background:var(--surface);cursor:pointer}
+  .d .n{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.04em}
+  .d .x{font-size:14px;font-weight:600;margin-top:2px}
+  .d.on{background:var(--ink);border-color:var(--ink)}
+  .d.on .n,.d.on .x{color:var(--paper)}
+  @media (prefers-color-scheme: dark){ .d.on{background:var(--teal-bg);border-color:var(--teal-line)} .d.on .n,.d.on .x{color:var(--teal)} }
+  .d .tag{font-size:9px;margin-top:2px;color:var(--faint);font-weight:600}
+  .d.on .tag{color:var(--paper);opacity:.7}
+  @media (prefers-color-scheme: dark){ .d.on .tag{color:var(--teal);opacity:.8} }
+
+  .dayttl{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:2px 2px 10px}
+  .fastpill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--amber);background:var(--amber-bg);border:1px solid var(--amber-line);padding:6px 11px;border-radius:999px;margin-bottom:14px}
+
+  /* timeline */
+  .tl{display:flex;flex-direction:column;gap:7px}
+  .row{display:grid;grid-template-columns:54px 1fr;gap:12px;align-items:start;padding:12px 14px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface)}
+  .row .tm{font-size:12px;color:var(--muted);font-weight:600;font-variant-numeric:tabular-nums;padding-top:1px}
+  .row .lb{font-size:15px;font-weight:550;line-height:1.3}
+  .row .sb{font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.35}
+  .row .pin{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:6px;margin-top:7px}
+  .row.health{border-color:var(--teal-line);background:var(--teal-bg)} .row.health .tm{color:var(--teal)} .row.health .pin{background:var(--teal);color:var(--paper)}
+  .row.fast{border-color:var(--amber-line);background:var(--amber-bg)} .row.fast .tm{color:var(--amber)} .row.fast .lb{color:var(--amber)}
+  .row.mind .pin{background:var(--plum-bg);color:var(--plum)}
+  .row.career .pin{background:var(--blue-bg);color:var(--blue)}
+  .row.family .pin{background:var(--slate-bg);color:var(--slate)}
+  .row.rest{background:transparent;border-style:dashed} .row.rest .lb{color:var(--muted);font-weight:450}
+  .row.live{box-shadow:0 0 0 2px var(--ink);border-color:var(--ink)}
+  @media (prefers-color-scheme: dark){ .row.live{box-shadow:0 0 0 2px var(--teal)} }
+
+  /* training cards */
+  .tc{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:15px 16px;margin-bottom:9px;display:flex;gap:13px}
+  .tc .ic{font-size:22px;line-height:1;flex-shrink:0}
+  .tc h3{font-size:15.5px;font-weight:620;margin-bottom:4px}
+  .tc p{font-size:13px;color:var(--muted);line-height:1.5}
+  .tc .when{display:inline-block;font-size:11px;font-weight:700;color:var(--teal);background:var(--teal-bg);padding:2px 8px;border-radius:6px;margin-bottom:7px;letter-spacing:.03em}
+
+  /* checklist */
+  .ck{display:flex;align-items:flex-start;gap:12px;padding:14px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);margin-bottom:8px;cursor:pointer}
+  .box{width:22px;height:22px;border-radius:7px;border:2px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:1px;transition:.12s}
+  .box svg{width:13px;height:13px;opacity:0;transition:.12s}
+  .ck.on .box{background:var(--teal);border-color:var(--teal)}
+  .ck.on .box svg{opacity:1}
+  .ck .cl{font-size:14.5px;font-weight:500;line-height:1.35}
+  .ck.on .cl{color:var(--muted);text-decoration:line-through}
+
+  .habit{display:flex;gap:8px;margin:4px 0 18px}
+  .hb{flex:1;text-align:center;padding:13px 4px;border:1px solid var(--line);border-radius:12px;background:var(--surface);cursor:pointer}
+  .hb .hi{font-size:18px}
+  .hb .hn{font-size:11px;font-weight:600;color:var(--muted);margin-top:4px}
+  .hb.on{background:var(--teal-bg);border-color:var(--teal-line)}
+  .hb.on .hn{color:var(--teal)}
+
+  .sect{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin:6px 2px 9px}
+
+  /* bottom nav */
+  nav{position:fixed;left:0;right:0;bottom:0;background:var(--paper);border-top:1px solid var(--line);padding:8px 0 calc(8px + var(--safe-b));z-index:30}
+  nav .inner{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+  nav button{background:none;border:none;color:var(--faint);font-size:11px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px;font-family:inherit}
+  nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+  nav button.on{color:var(--ink)}
+  @media (prefers-color-scheme: dark){ nav button.on{color:var(--teal)} }
+  .view{display:none} .view.on{display:block}
+  .hide{display:none!important}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="date" id="topdate">—</div>
+  <h1 id="toptitle">Plan</h1>
+  <div class="sub" id="topsub"></div>
+</div>
+
+<!-- HEUTE -->
+<section class="view on" id="v-heute">
+  <div class="nowcard" id="nowcard">
+    <div class="eyebrow"><span class="pulse"></span><span id="now-eyebrow">Jetzt</span></div>
+    <h2 id="now-title">—</h2>
+    <div class="meta" id="now-meta"></div>
+    <div class="next" id="now-next"></div>
+  </div>
+  <div class="sect">Heutige Gewohnheiten</div>
+  <div class="habit" id="habits"></div>
+  <div class="sect">Tagesablauf</div>
+  <div class="fastpill" id="fp-heute"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Fasten 16:8 · Essen 11:00–19:00</div>
+  <div class="tl" id="tl-heute"></div>
+</section>
+
+<!-- WOCHE -->
+<section class="view" id="v-woche">
+  <div class="strip" id="strip"></div>
+  <div class="dayttl" id="woche-title">—</div>
+  <div class="fastpill"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Fasten ab 19:00 · Essensfenster 11:00–19:00</div>
+  <div class="tl" id="tl-woche"></div>
+</section>
+
+<!-- TRAINING -->
+<section class="view" id="v-training">
+  <div class="sect">Wöchentliche Struktur</div>
+  <div id="trainlist"></div>
+</section>
+
+<!-- TO-DO -->
+<section class="view" id="v-todo">
+  <div class="sect">Diese Woche aufsetzen</div>
+  <div id="todolist"></div>
+</section>
+
+<nav>
+  <div class="inner">
+    <button class="on" data-v="heute"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>Heute</button>
+    <button data-v="woche"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Woche</button>
+    <button data-v="training"><svg viewBox="0 0 24 24"><path d="M6 7v10M18 7v10M3 9v6M21 9v6M6 12h12"/></svg>Training</button>
+    <button data-v="todo"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/><path d="M19 16l2 2 3-4" transform="translate(-5,-1)"/></svg>To-do</button>
+  </div>
+</nav>
+
+<script>
+const fullDays=['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+const shortD=['So','Mo','Di','Mi','Do','Fr','Sa'];
+// schedule keyed by JS getDay(): 0=So ... 6=Sa
+const SCH={
+ 1:[ // Montag
+  {t:'07:30',l:'Aufstehen + Kind fertig machen',c:'family'},
+  {t:'08:30',l:'Pendeln nach Wiesbaden',c:'rest'},
+  {t:'09:00',l:'Arbeit',s:'1 Erfolg ins Evidence Log',c:'career',p:'Karriere'},
+  {t:'11:00',l:'Essensfenster öffnet',c:'fast'},
+  {t:'18:15',l:'Heimkommen',c:'rest'},
+  {t:'18:30',l:'Abendessen Familie',s:'Letzte Mahlzeit vor 19:00',c:'family',p:'Familie'},
+  {t:'19:00',l:'Fasten beginnt',c:'fast'},
+  {t:'20:00',l:'Kind schlafen',c:'family'},
+  {t:'20:30',l:'Kettlebell — 20 min',s:'Goblet · Swing · Turkish Get-Up',c:'health',p:'Gesundheit'},
+  {t:'20:55',l:'McGill Big 3 — 10 min',c:'health',p:'Gesundheit'},
+  {t:'21:15',l:'Frau zurück · runterfahren',c:'mind',p:'Kopf'},
+  {t:'23:00',l:'Schlafen',c:'rest'} ],
+ 2:[ // Dienstag
+  {t:'07:30',l:'Aufstehen + Kind fertig machen',c:'family'},
+  {t:'08:30',l:'Pendeln nach Wiesbaden',c:'rest'},
+  {t:'09:00',l:'Arbeit',s:'Evidence Log',c:'career',p:'Karriere'},
+  {t:'11:00',l:'Essensfenster öffnet',c:'fast'},
+  {t:'18:15',l:'Heimkommen',c:'rest'},
+  {t:'18:30',l:'Abendessen Familie',s:'Letzte Mahlzeit vor 19:00',c:'family',p:'Familie'},
+  {t:'19:00',l:'Fasten beginnt',c:'fast'},
+  {t:'20:30',l:'McGill Big 3 — 10 min',c:'health',p:'Gesundheit'},
+  {t:'20:45',l:'Freie Zeit',s:'Serie, Lesen, nichts',c:'mind',p:'Kopf'},
+  {t:'23:00',l:'Schlafen',c:'rest'} ],
+ 3:[ // Mittwoch
+  {t:'07:30',l:'Aufstehen + Kind fertig machen',c:'family'},
+  {t:'08:30',l:'Pendeln nach Wiesbaden',c:'rest'},
+  {t:'09:00',l:'Arbeit',s:'Evidence Log',c:'career',p:'Karriere'},
+  {t:'11:00',l:'Essensfenster öffnet',c:'fast'},
+  {t:'18:15',l:'Heimkommen',c:'rest'},
+  {t:'18:30',l:'Abendessen Familie',s:'Letzte Mahlzeit vor 19:00',c:'family',p:'Familie'},
+  {t:'19:00',l:'Fasten beginnt',c:'fast'},
+  {t:'20:00',l:'Kind schlafen',c:'family'},
+  {t:'20:30',l:'Kettlebell — 20 min',s:'Gleiche Übungen wie Montag',c:'health',p:'Gesundheit'},
+  {t:'20:55',l:'McGill Big 3 — 10 min',c:'health',p:'Gesundheit'},
+  {t:'21:15',l:'Frau zurück · runterfahren',c:'mind',p:'Kopf'},
+  {t:'23:00',l:'Schlafen',c:'rest'} ],
+ 4:[ // Donnerstag
+  {t:'07:30',l:'Aufstehen + Kind fertig machen',c:'family'},
+  {t:'08:30',l:'Pendeln nach Wiesbaden',c:'rest'},
+  {t:'09:00',l:'Arbeit',s:'Evidence Log',c:'career',p:'Karriere'},
+  {t:'11:00',l:'Essensfenster öffnet',c:'fast'},
+  {t:'17:00',l:'Früher Feierabend → TG Höchst',c:'rest'},
+  {t:'18:00',l:'Rücken-Fit TG Höchst',s:'Nicht verhandelbar',c:'health',p:'Gesundheit'},
+  {t:'19:00',l:'Heimweg · Fasten beginnt',c:'fast'},
+  {t:'19:30',l:'Familienzeit',c:'family',p:'Familie'},
+  {t:'20:30',l:'McGill Big 3 — 10 min',c:'health',p:'Gesundheit'},
+  {t:'23:00',l:'Schlafen',c:'rest'} ],
+ 5:[ // Freitag
+  {t:'07:30',l:'Aufstehen + Kind fertig machen',c:'family'},
+  {t:'08:30',l:'Pendeln nach Wiesbaden',c:'rest'},
+  {t:'09:00',l:'Arbeit',s:'Woche reviewen — was lief gut?',c:'career',p:'Karriere'},
+  {t:'11:00',l:'Essensfenster öffnet',c:'fast'},
+  {t:'18:15',l:'Heimkommen',c:'rest'},
+  {t:'18:30',l:'Abendessen Familie',s:'Letzte Mahlzeit vor 19:00',c:'family',p:'Familie'},
+  {t:'19:00',l:'Fasten beginnt',c:'fast'},
+  {t:'20:30',l:'McGill Big 3 — 10 min',c:'health',p:'Gesundheit'},
+  {t:'20:45',l:'Freie Zeit',c:'mind',p:'Kopf'},
+  {t:'23:00',l:'Schlafen',c:'rest'} ],
+ 6:[ // Samstag
+  {t:'08:00',l:'Ausschlafen',c:'rest'},
+  {t:'09:00',l:'Trek FX3 — 45–60 min',s:'Nüchtern · Mainufer / Taunus',c:'health',p:'Gesundheit'},
+  {t:'11:00',l:'Frühstück Familie',s:'Essensfenster öffnet',c:'fast'},
+  {t:'14:00',l:'Freie Zeit / Familie',c:'family',p:'Familie'},
+  {t:'19:00',l:'Fasten beginnt',c:'fast'},
+  {t:'20:30',l:'McGill Big 3 — 10 min',c:'health',p:'Gesundheit'},
+  {t:'22:00',l:'Woche planen — 15 min',s:'Was ist der eine Schritt?',c:'mind',p:'Kopf'},
+  {t:'23:00',l:'Schlafen',c:'rest'} ],
+ 0:[ // Sonntag
+  {t:'08:00',l:'Ausschlafen',c:'rest'},
+  {t:'10:00',l:'Familienzeit',c:'family',p:'Familie'},
+  {t:'11:00',l:'Essensfenster öffnet',c:'fast'},
+  {t:'14:00',l:'Freie Zeit',c:'rest'},
+  {t:'19:00',l:'Fasten beginnt',c:'fast'},
+  {t:'20:30',l:'McGill Big 3 — 10 min',c:'health',p:'Gesundheit'},
+  {t:'22:00',l:'Runterfahren',c:'mind',p:'Kopf'},
+  {t:'23:00',l:'Schlafen',c:'rest'} ],
+};
+const DAYTAG={1:'Kettlebell',2:'—',3:'Kettlebell',4:'Rücken-Fit',5:'—',6:'Fahrrad',0:'Ruhe'};
+
+const TRAIN=[
+ {ic:'⚙️',w:'Mo + Mi · zuhause',h:'Kettlebell — 20 min',p:'20:30–21:00, Kind schläft, Frau beim Sport. Goblet Squat ×10, Two-hand Swing ×15, Turkish Get-Up ×3 je Seite. 16 kg Start, im Fastenzustand.'},
+ {ic:'🏋️',w:'Do · 18:00',h:'Rücken-Fit TG Höchst',p:'Einziger fixer Vereinstermin. Geführte Wirbelsäulengymnastik, direkt therapeutisch für die LWS. Nicht verhandelbar.'},
+ {ic:'🚴',w:'Sa Morgen · flexibel',h:'Trek FX3',p:'45–60 min Ausdauerfahrt nüchtern (Mainufer / Taunus), bevor das Essensfenster öffnet. Optional Di früh vor 7:30.'},
+ {ic:'🧘',w:'Täglich · 10 min',h:'McGill Big 3',p:'Bird-dog, Modified Curl-up, Side Plank. Die Basis, die alles trägt. Morgens oder abends. Keine Ausrede.'},
+];
+
+const TODO=[
+ 'Kettlebell besorgen falls nicht da — 16 kg',
+ 'Rücken-Fit Do 18:00 fix in den Kalender',
+ 'Mit Arbeitgeber Do früheren Feierabend klären',
+ 'Evidence Log anlegen — erste Eintragung heute',
+ 'McGill Big 3 heute Abend — 10 min',
+ 'Trek FX3 checken — Reifen, Bremsen, Licht',
+];
+
+const HABITS=[{id:'mcgill',i:'🧘',n:'McGill Big 3'},{id:'kb',i:'⚙️',n:'Kettlebell'},{id:'log',i:'📈',n:'Evidence Log'},{id:'fast',i:'⏱️',n:'16:8 Fasten'}];
+
+const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg>';
+
+// ---- state (localStorage) ----
+const today=new Date();
+const todayKey=today.toISOString().slice(0,10);
+function load(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}}
+function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
+let todoState=load('lp_todo',{});
+let habitState=load('lp_habit_'+todayKey,{});
+
+// ---- render helpers ----
+function toMin(t){const[a,b]=t.split(':').map(Number);return a*60+b}
+function rowHTML(r,live){
+  const pin=r.p?`<span class="pin">${r.p}</span>`:'';
+  const sub=r.s?`<div class="sb">${r.s}</div>`:'';
+  return `<div class="row ${r.c}${live?' live':''}"><div class="tm">${r.t}</div><div><div class="lb">${r.l}</div>${sub}${pin}</div></div>`;
+}
+function liveIndex(list){
+  const now=today.getHours()*60+today.getMinutes();
+  let idx=-1;
+  for(let i=0;i<list.length;i++){ if(toMin(list[i].t)<=now) idx=i; }
+  return idx;
+}
+
+function renderHeute(){
+  const list=SCH[today.getDay()];
+  const li=liveIndex(list);
+  // NOW card
+  const nc=document.getElementById('nowcard');
+  if(li>=0){
+    const cur=list[li], nxt=list[li+1];
+    document.getElementById('now-eyebrow').textContent='Jetzt';
+    document.getElementById('now-title').textContent=cur.l;
+    document.getElementById('now-meta').textContent=(cur.s?cur.s+' · ':'')+'seit '+cur.t;
+    document.getElementById('now-next').innerHTML = nxt
+      ? `<span class="t">${nxt.t}</span><span>als Nächstes:&nbsp;<b>${nxt.l}</b></span>` : '';
+  } else {
+    const nxt=list[0];
+    document.getElementById('now-eyebrow').textContent='Bald';
+    document.getElementById('now-title').textContent=nxt.l;
+    document.getElementById('now-meta').textContent='ab '+nxt.t;
+    document.getElementById('now-next').innerHTML='';
+  }
+  // timeline
+  document.getElementById('tl-heute').innerHTML=list.map((r,i)=>rowHTML(r,i===li)).join('');
+  // habits
+  document.getElementById('habits').innerHTML=HABITS.map(h=>
+    `<div class="hb ${habitState[h.id]?'on':''}" data-h="${h.id}"><div class="hi">${h.i}</div><div class="hn">${h.n}</div></div>`).join('');
+  document.querySelectorAll('[data-h]').forEach(el=>el.onclick=()=>{
+    const id=el.dataset.h; habitState[id]=!habitState[id]; save('lp_habit_'+todayKey,habitState); renderHeute();
+  });
+}
+
+let selDay=today.getDay();
+function renderWoche(){
+  document.getElementById('strip').innerHTML=[1,2,3,4,5,6,0].map(d=>
+    `<div class="d ${d===selDay?'on':''}" data-d="${d}"><div class="n">${shortD[d]}</div><div class="x">${shortD[d]}</div><div class="tag">${DAYTAG[d]}</div></div>`).join('');
+  document.querySelectorAll('[data-d]').forEach(el=>el.onclick=()=>{selDay=+el.dataset.d;renderWoche()});
+  document.getElementById('woche-title').textContent=fullDays[selDay];
+  const list=SCH[selDay];
+  const li=selDay===today.getDay()?liveIndex(list):-1;
+  document.getElementById('tl-woche').innerHTML=list.map((r,i)=>rowHTML(r,i===li)).join('');
+}
+
+function renderTrain(){
+  document.getElementById('trainlist').innerHTML=TRAIN.map(t=>
+    `<div class="tc"><div class="ic">${t.ic}</div><div><div class="when">${t.w}</div><h3>${t.h}</h3><p>${t.p}</p></div></div>`).join('');
+}
+function renderTodo(){
+  document.getElementById('todolist').innerHTML=TODO.map((t,i)=>
+    `<div class="ck ${todoState[i]?'on':''}" data-i="${i}"><div class="box">${CHECK}</div><div class="cl">${t}</div></div>`).join('');
+  document.querySelectorAll('[data-i]').forEach(el=>el.onclick=()=>{
+    const i=el.dataset.i; todoState[i]=!todoState[i]; save('lp_todo',todoState); renderTodo();
+  });
+}
+
+// nav
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.getElementById('v-'+b.dataset.v).classList.add('on');
+  const titles={heute:'Heute',woche:'Woche',training:'Training',todo:'Aufgaben'};
+  document.getElementById('toptitle').textContent=titles[b.dataset.v];
+  window.scrollTo(0,0);
+});
+
+// header date
+const dOpt={weekday:'long',day:'numeric',month:'long'};
+document.getElementById('topdate').textContent=today.toLocaleDateString('de-DE',{weekday:'long'}).toUpperCase()+' · '+DAYTAG[today.getDay()];
+document.getElementById('toptitle').textContent='Heute';
+document.getElementById('topsub').textContent=today.toLocaleDateString('de-DE',{day:'numeric',month:'long',year:'numeric'});
+
+renderHeute();renderWoche();renderTrain();renderTodo();
+// refresh "now" every minute
+setInterval(()=>{renderHeute(); if(document.getElementById('v-woche').classList.contains('on'))renderWoche();},60000);
+</script>
+</body>
+</html>
